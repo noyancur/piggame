@@ -8,7 +8,7 @@ GAME RULES:
 */
 
 
-var scores, roundScore, activePlayer, gamePlaying;
+var scores, roundScore, activePlayer, gamePlaying, winningScore;
 
 var diceDOM = document.querySelector('.dice');
 
@@ -24,6 +24,7 @@ document.getElementById('score-0').textContent = 0;
 document.getElementById('score-1').textContent = 0;
 document.getElementById('current-0').textContent = 0;
 document.getElementById('current-1').textContent = 0;
+document.querySelector('.winning-score').style.display = 'none';
 
 document.querySelector('.btn-roll').addEventListener('click', function() {
 
@@ -61,7 +62,7 @@ document.querySelector('.btn-hold').addEventListener('click', function() {
         document.getElementById('current-' + activePlayer).textContent = roundScore;
 
 
-        if (score[activePlayer] >= 100) {
+        if (score[activePlayer] >= winningScore) {
             document.getElementById('name-' + activePlayer).textContent = 'WINNERR!';
             document.querySelector('.player-' + activePlayer + '-panel').classList.add('winner');
             var tempScore = score[activePlayer];
@@ -82,7 +83,18 @@ document.querySelector('.btn-hold').addEventListener('click', function() {
 /**
  *  New game button clicked, then everything will be reseted.
  */
-document.querySelector('.btn-new').addEventListener('click', reset);
+document.querySelector('.btn-new').addEventListener('click', function() {
+    reset();
+
+    /**
+     *  Take the winning score from user and show it
+     */
+    winningScore = prompt("What is the winning score?");
+    document.querySelector('.winning-score').textContent = winningScore;
+    document.querySelector('.winning-score').style.display = 'block';
+
+
+});
 
 
 /**
@@ -116,5 +128,6 @@ function reset() {
     document.querySelector('.player-0-panel').classList.remove('winner');
     document.querySelector('.player-1-panel').classList.remove('winner');
     document.querySelector('.player-' + activePlayer + '-panel').classList.add('active');
+    document.querySelector('.player-' + (activePlayer === 1 ? 0 : 1) + '-panel').classList.remove('active');
     diceDOM.style.display = 'none';
 }

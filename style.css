@@ -145,7 +145,16 @@ i {
 }
 
 .btn-new {
-    top: 45px;
+    top: 60px;
+}
+
+
+/**
+ *  Winning Score
+ */
+
+.winning-score {
+    top: 25px;
 }
 
 .btn-roll {
