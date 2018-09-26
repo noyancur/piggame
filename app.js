@@ -8,7 +8,12 @@ GAME RULES:
 */
 
 
-var scores, roundScore, activePlayer, gamePlaying, winningScore;
+var scores, roundScore, activePlayer, gamePlaying, winningScore, preDice;
+
+/* preDice is the previous value of the dice. If current dice and previous dice are 6, then current value will be zero and it's the
+ * next player's turn
+ */
+
 
 var diceDOM = document.querySelector('.dice');
 
@@ -29,24 +34,45 @@ document.querySelector('.winning-score').style.display = 'none';
 document.querySelector('.btn-roll').addEventListener('click', function() {
 
     if (gamePlaying) {
+
         // 1. Random number
         var dice = Math.floor(Math.random() * 6) + 1;
 
-        // 2. Display the result
-        diceDOM.style.display = 'block';
-        diceDOM.src = 'dice-' + dice + '.png';
+        // --------- burada kaldın -----------
 
-        // 3. Update the number score IF the rolled number was NOT a 1
-        if (dice !== 1) {
-            roundScore += dice;
-            document.getElementById('current-' + activePlayer).textContent = roundScore;
-        } else {
+        /**
+         * Check the current and previous dice. If both are 6 it is amazing.
+         */
+        if (doubleSixControl(dice, preDice)) {
+            alert("You unlucky!");
+            score[activePlayer] = 0;
             roundScore = 0;
-            document.getElementById('current-' + activePlayer).textContent = roundScore;
-
+            document.getElementById('current-' + activePlayer).textContent = 0;
+            document.getElementById('score-' + activePlayer).textContent = 0;
+            dice = undefined;
+            preDice = undefined;
             activeChange();
-        }
+        } else {
+            preDice = dice;
 
+            // 2. Display the result
+            diceDOM.style.display = 'block';
+            diceDOM.src = 'dice-' + dice + '.png';
+
+            // 3. Update the number score IF the rolled number was NOT a 1
+            if (dice !== 1) {
+                roundScore += dice;
+                document.getElementById('current-' + activePlayer).textContent = roundScore;
+            } else {
+                roundScore = 0;
+                document.getElementById('current-' + activePlayer).textContent = roundScore;
+
+                activeChange();
+            }
+        }
+        // -------- burada kaldın ------------
+    } else {
+        alert('Start the new game!')
     }
 });
 
@@ -77,6 +103,8 @@ document.querySelector('.btn-hold').addEventListener('click', function() {
             activeChange();
         }
         // 2. Change the active player
+    } else {
+        alert('Start the new game!')
     }
 });
 
@@ -90,6 +118,9 @@ document.querySelector('.btn-new').addEventListener('click', function() {
      *  Take the winning score from user and show it
      */
     winningScore = prompt("What is the winning score?");
+    if (winningScore) {
+        gamePlaying = true;
+    }
     document.querySelector('.winning-score').textContent = winningScore;
     document.querySelector('.winning-score').style.display = 'block';
 
@@ -114,7 +145,7 @@ function activeChange() {
  *  Reset and initiliaze everything
  */
 function reset() {
-    gamePlaying = true;
+    gamePlaying = false;
     score = [0, 0];
     roundScore = 0;
     activePlayer = 0;
@@ -130,4 +161,18 @@ function reset() {
     document.querySelector('.player-' + activePlayer + '-panel').classList.add('active');
     document.querySelector('.player-' + (activePlayer === 1 ? 0 : 1) + '-panel').classList.remove('active');
     diceDOM.style.display = 'none';
+}
+
+
+/**
+ *  If two parameter is same, it is the next player's turn and current score will be zero
+ */
+
+
+function doubleSixControl(dice, preDice) {
+    if (dice === 6 && preDice === 6) {
+        return true;
+    } else {
+        return false;
+    }
 }
