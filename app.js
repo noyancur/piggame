@@ -8,14 +8,21 @@ GAME RULES:
 */
 
 
-var scores, roundScore, activePlayer, gamePlaying, winningScore, preDice;
+var scores, roundScore, activePlayer, gamePlaying, winningScore, preDice, diceWait;
 
 /* preDice is the previous value of the dice. If current dice and previous dice are 6, then current value will be zero and it's the
  * next player's turn
  */
 
 
+/**
+ *  diceWait is for alert when player's any of dice is 1, then dice will shown in a short time then it will dissappear. When player try
+ *  to click roll button in dice showing time, player will be warned.
+ */
+
+
 var diceDOM = document.querySelector('.dice');
+var diceDOM2 = document.querySelector('.dice2');
 
 // Initiliaze the scores
 reset();
@@ -37,8 +44,9 @@ document.querySelector('.btn-roll').addEventListener('click', function() {
 
         // 1. Random number
         var dice = Math.floor(Math.random() * 6) + 1;
+        var dice2 = Math.floor(Math.random() * 6) + 1;
 
-        // --------- burada kaldın -----------
+
 
         /**
          * Check the current and previous dice. If both are 6 it is amazing.
@@ -52,27 +60,42 @@ document.querySelector('.btn-roll').addEventListener('click', function() {
             dice = undefined;
             preDice = undefined;
             activeChange();
+
+
         } else {
             preDice = dice;
 
-            // 2. Display the result
+            // 2. Display the result for the first dice
             diceDOM.style.display = 'block';
             diceDOM.src = 'dice-' + dice + '.png';
 
+
+            // Display the result for the second dice
+            diceDOM2.style.display = 'block';
+            diceDOM2.src = 'dice-' + dice2 + '.png';
+
             // 3. Update the number score IF the rolled number was NOT a 1
-            if (dice !== 1) {
+            if (dice !== 1 && dice2 !== 1) {
                 roundScore += dice;
+                roundScore += dice2;
                 document.getElementById('current-' + activePlayer).textContent = roundScore;
             } else {
                 roundScore = 0;
                 document.getElementById('current-' + activePlayer).textContent = roundScore;
 
                 activeChange();
+
+                // When any of the dice is 1, then player can see it for a second (in parameter), then dices will be disappeared.
+                showAndHideDice(700, dice, dice2);
             }
         }
-        // -------- burada kaldın ------------
+
     } else {
-        alert('Start the new game!')
+        if (diceWait) {
+            alert('Wait!');
+        } else {
+            alert('Start the new game!');
+        }
     }
 });
 
@@ -98,13 +121,18 @@ document.querySelector('.btn-hold').addEventListener('click', function() {
             document.querySelector('.player-' + 0 + '-panel').classList.remove('active');
             document.querySelector('.player-' + 1 + '-panel').classList.remove('active');
             diceDOM.style.display = 'none';
+            diceDOM2.style.display = 'none';
             gamePlaying = false;
         } else {
             activeChange();
         }
         // 2. Change the active player
     } else {
-        alert('Start the new game!')
+        if (diceWait) {
+            alert('Wait!');
+        } else {
+            alert('Start the new game!');
+        }
     }
 });
 
@@ -117,10 +145,7 @@ document.querySelector('.btn-new').addEventListener('click', function() {
     /**
      *  Take the winning score from user and show it
      */
-    winningScore = prompt("What is the winning score?");
-    if (winningScore) {
-        gamePlaying = true;
-    }
+
     document.querySelector('.winning-score').textContent = winningScore;
     document.querySelector('.winning-score').style.display = 'block';
 
@@ -135,6 +160,7 @@ document.querySelector('.btn-new').addEventListener('click', function() {
 function activeChange() {
 
     diceDOM.style.display = 'none';
+    diceDOM2.style.display = 'none';
     activePlayer === 0 ? activePlayer = 1 : activePlayer = 0;
     document.querySelector('.player-' + (activePlayer === 0 ? 1 : 0) + '-panel').classList.remove('active');
     document.querySelector('.player-' + activePlayer + '-panel').classList.add('active');
@@ -145,22 +171,28 @@ function activeChange() {
  *  Reset and initiliaze everything
  */
 function reset() {
-    gamePlaying = false;
-    score = [0, 0];
-    roundScore = 0;
-    activePlayer = 0;
 
-    document.getElementById('score-0').textContent = 0;
-    document.getElementById('score-1').textContent = 0;
-    document.getElementById('current-0').textContent = 0;
-    document.getElementById('current-1').textContent = 0;
-    document.getElementById('name-0').textContent = 'Player 1';
-    document.getElementById('name-1').textContent = 'Player 2';
-    document.querySelector('.player-0-panel').classList.remove('winner');
-    document.querySelector('.player-1-panel').classList.remove('winner');
-    document.querySelector('.player-' + activePlayer + '-panel').classList.add('active');
-    document.querySelector('.player-' + (activePlayer === 1 ? 0 : 1) + '-panel').classList.remove('active');
-    diceDOM.style.display = 'none';
+    winningScore = prompt("What is the winning score?");
+    if (winningScore > 0) {
+        gamePlaying = true;
+        score = [0, 0];
+        roundScore = 0;
+        activePlayer = 0;
+        document.getElementById('score-0').textContent = 0;
+        document.getElementById('score-1').textContent = 0;
+        document.getElementById('current-0').textContent = 0;
+        document.getElementById('current-1').textContent = 0;
+        document.getElementById('name-0').textContent = 'Player 1';
+        document.getElementById('name-1').textContent = 'Player 2';
+        document.querySelector('.player-0-panel').classList.remove('winner');
+        document.querySelector('.player-1-panel').classList.remove('winner');
+        document.querySelector('.player-' + activePlayer + '-panel').classList.add('active');
+        document.querySelector('.player-' + (activePlayer === 1 ? 0 : 1) + '-panel').classList.remove('active');
+        diceDOM.style.display = 'none';
+        diceDOM2.style.display = 'none';
+    } else {
+        gamePlaying = false;
+    }
 }
 
 
@@ -175,4 +207,26 @@ function doubleSixControl(dice, preDice) {
     } else {
         return false;
     }
+}
+
+/**
+ *  To see dice when it is 1. If diceWait is true, player can not click the roll or any of the button, he/she should wait other player turn.
+ */
+function showAndHideDice(secs, dice, dice2) {
+    gamePlaying = false;
+    diceWait = true;
+    diceDOM.style.display = 'block';
+    diceDOM.src = 'dice-' + dice + '.png';
+
+    diceDOM2.style.display = 'block';
+    diceDOM2.src = 'dice-' + dice2 + '.png';
+
+    setTimeout(function() {
+            diceDOM.style.display = 'none';
+            diceDOM2.style.display = 'none';
+            gamePlaying = true;
+            diceWait = false;
+        },
+        secs);
+
 }
